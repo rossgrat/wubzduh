@@ -13,12 +13,12 @@ import (
 //For each artist in the database, get the latest release by each artist, may be either a full length album or an EP / Single, we make the following assumptions here:
 //1) An arist will not release both a new single and a new album in one day
 //2) An artist will not release more than one new single or more than one new album in one day
-func spotifyGetArtistsLatestAlbums(client *spotify.Client, ctx context.Context, artists []Artist) (albums []Album) {
+func spotifyGetArtistsLatestAlbums(client *spotify.Client, ctx context.Context, artists []Artist, albumType spotify.AlbumType) (albums []Album) {
 	//For all artists, check if latest album released has release date equal to todays date
 	for _, a := range artists {
 
 		fmt.Printf("%s %s\n", a.ArtistName, a.SpotifyID)
-		albumResults, err := client.GetArtistAlbums(ctx, (spotify.ID)(a.SpotifyID), []spotify.AlbumType{spotify.AlbumTypeAlbum, spotify.AlbumTypeSingle}, spotify.Limit(1))
+		albumResults, err := client.GetArtistAlbums(ctx, (spotify.ID)(a.SpotifyID), []spotify.AlbumType{albumType}, spotify.Limit(1))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -70,7 +70,10 @@ func checkAlbumReleasedToday(album Album) (releasedToday bool) {
 func Fetch(db *sql.DB, client *spotify.Client, ctx context.Context) {
 	//Get slice of latest albums from all artists
 	artists := GetAllArtists(db)
-	newAlbums := spotifyGetArtistsLatestAlbums(client, ctx, artists)
+	newAlbums := spotifyGetArtistsLatestAlbums(client, ctx, artists, spotify.AlbumTypeAlbum)
+	newSingles := spotifyGetArtistsLatestAlbums(client, ctx, artists, spotify.AlbumTypeSingle)
+
+	newAlbums = append(newAlbums, newSingles...)
 
 	for _, a := range newAlbums {
 		if checkAlbumReleasedToday(a) {
@@ -93,7 +96,10 @@ func Fetch(db *sql.DB, client *spotify.Client, ctx context.Context) {
 func FetchAllLatest(db *sql.DB, client *spotify.Client, ctx context.Context) {
 	//Get slice of latest albums from all artists
 	artists := GetAllArtists(db)
-	newAlbums := spotifyGetArtistsLatestAlbums(client, ctx, artists)
+	newAlbums := spotifyGetArtistsLatestAlbums(client, ctx, artists, spotify.AlbumTypeAlbum)
+	newSingles := spotifyGetArtistsLatestAlbums(client, ctx, artists, spotify.AlbumTypeSingle)
+
+	newAlbums = append(newAlbums, newSingles...)
 
 	for _, a := range newAlbums {
 		//Create new album entry in database, if we could not insert the album (album already exists in db), continue
