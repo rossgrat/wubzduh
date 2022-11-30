@@ -1,0 +1,13 @@
+[Unit]
+Description=wubzweb
+
+[Service]
+EnvironmentFile=/home/ubuntu/wubzduh/cmd/web/env.txt
+WorkingDirectory=/home/ubuntu/wubzduh/cmd/web
+Type=simple
+ExecStart=/home/ubuntu/wubzduh/cmd/web/web
+StandardOutput=file:/home/ubuntu/serverlog
+StandardError=file:/home/ubuntu/serverlog
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,26 @@
+{{define "album"}}
+<div>
+    <table>
+        <tr>
+            <td><img src={{.CoverartURL}}></td>
+        </tr>
+        <tr>
+            <td>
+                <h2 class="no-pad-header">{{.AlbumTitle}}</h2>
+                <h3 style="margin:0; padding:0">{{.ArtistName}}</h3>
+                <h4 style="margin:0; padding:0">{{.ReleaseDate}}</h4>
+                <p><a href={{.AlbumURL}}>Listen Now</a></p>
+            </td>
+        </tr>
+    </table>
+    <table>
+        {{range .Tracks}}
+        <tr>
+            <td style="padding-right:10px;">{{.TrackNumber}}</td>
+            <td style="padding-right:10px;">{{.TrackTitle}}</td>
+            <td>{{.DurationMinutes}}:{{.DurationSeconds}}</td>
+        </tr>
+        {{end}}
+    </table>
+</div>
+{{end}}

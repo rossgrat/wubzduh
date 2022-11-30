@@ -1,0 +1,63 @@
+[DONE] Finish Web-Server
+[DONE] Reset Database and pull in test albums
+[DONE] Update Fetch module to check if new albums already exist
+[DONE] Write Purge module
+    [DONE] Remove all albums and tracks from database that are older than 7 days
+[DONE] Combine Web-Server, Fetch, and Purge modules into one module
+    [DONE]Fetch and Purge modules to run with customer scheduler
+    [DONE]Add write locks to Fetch and Purge, web-server uses read locks
+[DONE] Deployment
+    [DONE] Deploy Web-Server on Lightsail
+    [DONE] Set DNS for domain to point to LightSail instance
+Secure site with HTTPS
+Add logger to record visits
+[DONE] Add CSS to make site mobile friendly
+Change BR sizes to be larger
+
+IMPORTANT: ctrl+F5 = hard refresh to show CSS updates
+
+
+Write Playlist module
+    For all new albums
+        Get track and add it to playlists
+    For all albums older than one week
+        Remove entry from playlist
+
+CLI Module Additions
+    Print contents of Album table
+    Print contents of Track table
+
+Allow sorting of albums by genres
+    Add logic in FeedHandler to grab tracks based on genre parameter/feed/?genre=house
+    https://golangbyexample.com/net-http-package-get-query-params-golang/
+
+Misc Ideas
+Tag albums release day of with NEW RELEASE when displaying on website?
+Add total duration to album displayed information
+Add last release date field in artists tab
+
+Far Out Ideas
+Does soundcloud have an API? Or could I scrape it in a reasonable amount of time?
+
+
+
+Scheduler Brainstorming - Fetch
+Run at 
+12:30am - Very beginning of the day 
+11:30pm - Very end of the day
+Use a global timer variable and just set it each time a go routine executes, then spawn a new go routine
+
+--Go Routine
+Get time UDT
+Switch time
+	case: time is between 12:30am and 11:30pm - 12:30am has just run
+		schedule next run for 11:30pm
+	case: time is between 11:30pm and 12:30am
+		schedule next run for 12:30am - 11:30pm has just run
+Block until timer executes
+Run Fetch
+Spawn new go routine using this function
+
+
+Scheduler Brainstorming - Purge
+Purge runs once a day at 12:00pm? or 1:00am?

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <font face ="monospace" color="white">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+    <link rel="stylesheet" href="/static/style.css">
+    <title>{{.Title}}</title>
+</head>
+<body>
+    {{template "navbar" .}}
+    <br>
+    <br>
+    <div class="row">
+        <h1>{{.Title}}</h1>
+        <p>Playlist is updated at 12:00pm UTC each day with all tracks from all new releases</p>
+        <p>Tracks released more than two weeks ago are erased at 12:00pm UTC each day.</p>
+    </div>
+    <div class="row">
+        <p style="color:red">{{.Playlist}}</p>
+    </div>
+</body>
+</html>
