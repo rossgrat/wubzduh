@@ -39,7 +39,7 @@ func FetchThread(timeCase int) {
 
 	FetchTimer = time.NewTimer(diff)
 	<-FetchTimer.C
-	wubzduh.Fetch(DB, Client, Ctx)
+	wubzduh.Fetch(DB)
 	go FetchThread((timeCase + 1) % numTimes)
 }
 

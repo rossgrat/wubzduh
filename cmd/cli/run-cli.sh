@@ -1,5 +1,6 @@
 #!/bin/bash
 set -a
-. ../../src/env.txt
+. ../../env.txt
 set +a
+go build .
 ./cli

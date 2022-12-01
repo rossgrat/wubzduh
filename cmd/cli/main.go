@@ -71,9 +71,26 @@ func addArtist(db *sql.DB, client *spotify.Client, ctx context.Context) {
 		fmt.Scanf("%d", selection)
 		fmt.Printf("Selected entry %d: %s\n", selection, searchMap[selection].Name)
 
-		_, err = db.Exec(insertArtist, searchMap[selection].Name, searchMap[selection].SimpleArtist.ID)
+		artistQuery, err := db.Exec(getAllArtistsWithName, searchMap[selection].Name)
 		if err != nil {
-			log.Fatalf("couldn't insert artist: %v", err)
+			log.Fatalf("Error - couldn't query Artists: %v", err)
+		}
+
+		count, err := artistQuery.RowsAffected()
+		if err != nil {
+			log.Fatalf("Error - couldn't check Album query rows: %v", err)
+		}
+		if count == 0 {
+			if err != nil {
+				log.Fatalf("Failed to query artists: %v", err)
+			}
+
+			_, err = db.Exec(insertArtist, searchMap[selection].Name, searchMap[selection].SimpleArtist.ID)
+			if err != nil {
+				log.Fatalf("couldn't insert artist: %v", err)
+			}
+		} else {
+			fmt.Printf("Error - Artist exists in database.")
 		}
 	}
 }
@@ -155,10 +172,10 @@ func main() {
 			searchForArtist(db)
 		case "4":
 			fmt.Print("Executing Fetch...")
-			wubzduh.Fetch(db, client, ctx)
+			wubzduh.Fetch(db)
 		case "5":
 			fmt.Print("Executing Fetch...")
-			wubzduh.FetchAllLatest(db, client, ctx)
+			wubzduh.FetchAllLatest(db)
 		case "6":
 			fmt.Print("Executing Purge..")
 			wubzduh.Purge(db)

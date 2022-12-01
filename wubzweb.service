@@ -2,7 +2,7 @@
 Description=wubzweb
 
 [Service]
-EnvironmentFile=/home/ubuntu/wubzduh/cmd/web/env.txt
+EnvironmentFile=/home/ubuntu/wubzduh/env.txt
 WorkingDirectory=/home/ubuntu/wubzduh/cmd/web
 Type=simple
 ExecStart=/home/ubuntu/wubzduh/cmd/web/web

@@ -3,8 +3,8 @@ package wubzduh
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/zmb3/spotify/v2"
@@ -17,23 +17,23 @@ func spotifyGetArtistsLatestAlbums(client *spotify.Client, ctx context.Context, 
 	//For all artists, check if latest album released has release date equal to todays date
 	for _, a := range artists {
 
-		fmt.Printf("%s %s\n", a.ArtistName, a.SpotifyID)
 		albumResults, err := client.GetArtistAlbums(ctx, (spotify.ID)(a.SpotifyID), []spotify.AlbumType{albumType}, spotify.Limit(1))
 		if err != nil {
 			log.Fatal(err)
 		}
-
+		if len(albumResults.Albums) < 1 {
+			continue
+		}
 		//Create new album from album retrieved from spotify API
 		newAlbum := Album{
 			AlbumTitle:  albumResults.Albums[0].Name,
 			ArtistID:    a.ID,
 			ReleaseDate: albumResults.Albums[0].ReleaseDate,
 			CoverartURL: albumResults.Albums[0].Images[1].URL,
-			AlbumType:   albumResults.Albums[0].AlbumType,
+			AlbumType:   strings.ToTitle(albumResults.Albums[0].AlbumType),
 			AlbumURL:    (string)(albumResults.Albums[0].ExternalURLs["spotify"]),
 			SpotifyID:   (string)(albumResults.Albums[0].ID),
 		}
-
 		albums = append(albums, newAlbum)
 	}
 	return albums
@@ -67,7 +67,8 @@ func checkAlbumReleasedToday(album Album) (releasedToday bool) {
 
 //Fetch - Main function to update database with newly released albums and their tracks
 //For all artists, get latest releases. If any artist has an album released today, add that album and its tracks to the database
-func Fetch(db *sql.DB, client *spotify.Client, ctx context.Context) {
+func Fetch(db *sql.DB) {
+	client, ctx := ConnectToSpotify()
 	//Get slice of latest albums from all artists
 	artists := GetAllArtists(db)
 	newAlbums := spotifyGetArtistsLatestAlbums(client, ctx, artists, spotify.AlbumTypeAlbum)
@@ -78,7 +79,7 @@ func Fetch(db *sql.DB, client *spotify.Client, ctx context.Context) {
 	for _, a := range newAlbums {
 		if checkAlbumReleasedToday(a) {
 			//Create new album entry in database, if we could not insert the album (album already exists in db), continue
-			if InsertAlbum(db, a) == false {
+			if !InsertAlbum(db, a) {
 				continue
 			}
 			//Album does not already exist in database
@@ -93,7 +94,8 @@ func Fetch(db *sql.DB, client *spotify.Client, ctx context.Context) {
 }
 
 //Fetches all latest albums and their tracks and inserts them into databases. Used for populating the database for testing
-func FetchAllLatest(db *sql.DB, client *spotify.Client, ctx context.Context) {
+func FetchAllLatest(db *sql.DB) {
+	client, ctx := ConnectToSpotify()
 	//Get slice of latest albums from all artists
 	artists := GetAllArtists(db)
 	newAlbums := spotifyGetArtistsLatestAlbums(client, ctx, artists, spotify.AlbumTypeAlbum)
@@ -103,7 +105,7 @@ func FetchAllLatest(db *sql.DB, client *spotify.Client, ctx context.Context) {
 
 	for _, a := range newAlbums {
 		//Create new album entry in database, if we could not insert the album (album already exists in db), continue
-		if InsertAlbum(db, a) == false {
+		if !InsertAlbum(db, a) {
 			continue
 		}
 		//Album does not already exist in database
