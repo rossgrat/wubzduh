@@ -17,14 +17,6 @@ import (
 )
 
 const (
-	host     = "localhost"
-	port     = 5432
-	user     = "ross"
-	password = "password"
-	dbname   = "wubz"
-)
-
-const (
 	insertArtist           = `INSERT INTO Artists (ArtistName, SpotifyID) values ($1, $2)`
 	getAllArtistsNameAndID = `SELECT ArtistName, SpotifyID FROM Artists ORDER BY ArtistName ASC;`
 	getAllArtistsWithName  = `SELECT ArtistName, SpotifyID FROM Artists WHERE ArtistName=$1`
