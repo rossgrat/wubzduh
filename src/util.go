@@ -41,8 +41,6 @@ func ConnectToDB() (db *sql.DB) {
 
 //Connec to spotify client
 func ConnectToSpotify() (client *spotify.Client, ctx context.Context) {
-	//os.Getenv("SPOTIFY_ID"),
-	//os.Getenv("SPOTIFY_SECRET"),
 	ctx = context.Background()
 	config := &clientcredentials.Config{
 		ClientID:     os.Getenv("SPOTIFY_CLIENT_ID"),
