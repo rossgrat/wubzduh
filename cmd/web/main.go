@@ -16,6 +16,15 @@ var Client *spotify.Client
 var Ctx context.Context
 var Lock sync.RWMutex
 
+func RequestLogger(mux http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mux.ServeHTTP(w, r)
+
+		log.Printf("%s - %s %s\n", r.RemoteAddr, r.Method, r.RequestURI)
+	})
+
+}
+
 func main() {
 
 	//Initialize global variables
@@ -27,11 +36,12 @@ func main() {
 	go PurgeThread()
 
 	//Set handler functions and start web server
-	http.HandleFunc("/artists/", ArtistsViewHandler)
-	http.HandleFunc("/feed/", FeedViewHandler)
-	http.HandleFunc("/playlist/", PlaylistViewHandler)
-	http.HandleFunc("/favicon.icoa", FaviconHandler)
-	http.HandleFunc("/", FeedRedirect)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/artists/", ArtistsViewHandler)
+	mux.HandleFunc("/feed/", FeedViewHandler)
+	mux.HandleFunc("/playlist/", PlaylistViewHandler)
+	mux.HandleFunc("/favicon.ico", FaviconHandler)
+	mux.HandleFunc("/", FeedRedirect)
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	log.Fatal(http.ListenAndServe(":8080", RequestLogger(mux)))
 }

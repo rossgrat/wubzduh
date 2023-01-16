@@ -39,7 +39,7 @@ func ConnectToDB() (db *sql.DB) {
 	return db
 }
 
-//Connec to spotify client
+//Connect to spotify client
 func ConnectToSpotify() (client *spotify.Client, ctx context.Context) {
 	ctx = context.Background()
 	config := &clientcredentials.Config{

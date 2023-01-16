@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	wubzduh "github.com/rossgrat/wubzduh/src"
@@ -29,12 +29,12 @@ func FetchThread(timeCase int) {
 		currentTimePlusDay := currentTime.AddDate(0, 0, 1)
 		targetTime := time.Date(currentTimePlusDay.Year(), currentTimePlusDay.Month(), currentTimePlusDay.Day(), 0, 30, 0, 0, currentTimePlusDay.Location())
 		diff = targetTime.Sub(currentTime)
-		fmt.Printf("Set Fetch Timer for 12:30am Tomorrow. ETE: %s\n", diff)
+		log.Printf("Set Fetch Timer for 12:30am Tomorrow. ETE: %s\n", diff)
 	case time2:
 		//11:30pm the same day
 		targetTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 23, 30, 0, 0, currentTime.Location())
 		diff = targetTime.Sub(currentTime)
-		fmt.Printf("Set Fetch Timer for 11:30pm Today. ETE: %s\n", diff)
+		log.Printf("Set Fetch Timer for 11:30pm Today. ETE: %s\n", diff)
 	}
 
 	FetchTimer = time.NewTimer(diff)
