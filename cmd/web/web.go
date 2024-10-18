@@ -22,14 +22,14 @@ type PlaylistPage struct {
 	Playlist string
 }
 
-var Templates = template.Must(template.ParseFiles("feed.html", "artists.html", "navbar.html", "album.html", "playlist.html"))
+var Templates = template.Must(template.ParseFiles("feed.html", "artists.html", "navbar.html", "album.html"))
 
-//Redirects to Feed View
+// Redirects to Feed View
 func FeedRedirect(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/feed/", http.StatusFound)
 }
 
-//Serves main feed fiew of all new albums and tracks
+// Serves main feed fiew of all new albums and tracks
 func FeedViewHandler(w http.ResponseWriter, r *http.Request) {
 	var Page FeedPage
 	//Get all albums to be shown on page
@@ -42,7 +42,7 @@ func FeedViewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//Lists all artists in DB
+// Lists all artists in DB
 func ArtistsViewHandler(w http.ResponseWriter, r *http.Request) {
 	var Page ArtistPage
 	//Get all artists to be shown on the page
@@ -55,19 +55,7 @@ func ArtistsViewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//Show playlist link
-func PlaylistViewHandler(w http.ResponseWriter, r *http.Request) {
-	var Page PlaylistPage
-	Page.Title = "Playlist"
-	Page.Playlist = "Under Constuction"
-
-	err := Templates.ExecuteTemplate(w, "playlist.html", &Page)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-//Serves favicon that shows up on tab
+// Serves favicon that shows up on tab
 func FaviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/music.png")
 }

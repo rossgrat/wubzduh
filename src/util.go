@@ -20,7 +20,7 @@ const (
 	port = 5432
 )
 
-//Utility functions
+// Utility functions
 func ConnectToDB() (db *sql.DB) {
 	user := os.Getenv("DB_USERNAME")
 	password := os.Getenv("DB_PASSWORD")
@@ -39,7 +39,7 @@ func ConnectToDB() (db *sql.DB) {
 	return db
 }
 
-//Connect to spotify client
+// Connect to spotify client
 func ConnectToSpotify() (client *spotify.Client, ctx context.Context) {
 	ctx = context.Background()
 	config := &clientcredentials.Config{

@@ -1,7 +1,6 @@
 package main
 
 // This module allows a user to add a module to the database via the command line
-// TODO: Abstract database connect, abstract spotify connection
 
 import (
 	"context"

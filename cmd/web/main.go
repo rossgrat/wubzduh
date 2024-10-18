@@ -19,7 +19,6 @@ var Lock sync.RWMutex
 func RequestLogger(mux http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mux.ServeHTTP(w, r)
-
 		log.Printf("%s - %s %s\n", r.RemoteAddr, r.Method, r.RequestURI)
 	})
 
@@ -39,7 +38,6 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/artists/", ArtistsViewHandler)
 	mux.HandleFunc("/feed/", FeedViewHandler)
-	mux.HandleFunc("/playlist/", PlaylistViewHandler)
 	mux.HandleFunc("/favicon.ico", FaviconHandler)
 	mux.HandleFunc("/", FeedRedirect)
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))

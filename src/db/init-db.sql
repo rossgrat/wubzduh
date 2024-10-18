@@ -32,7 +32,6 @@ VALUES
 ('Tipper', '1soJ22UMyjIw6SYFtoFJwe'),
 ('Bob Moses', '6LHsnRBUYhFyt01PdKXAF5'),
 ('Tycho', '5oOhM2DFWab8XhSdQiITry'),
-('Bassnectar', '1JPy5PsJtkhftfdr6saN2i'),
 ('Supertask', '47qa2xx9Xlw1oGkKbMq8Zt'),
 ('Lab Group ', '4VSPQ1ufWQpHYbIIbRguSV'),
 ('CharlestheFirst', '2FTj5ijy8lP59d2V9dHR6I'),
