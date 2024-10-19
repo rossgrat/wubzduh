@@ -6,19 +6,19 @@
         </tr>
         <tr>
             <td>
-                <h2 class="no-pad-header">{{.AlbumTitle}}</h2>
+                <h2 class="no-pad-header">{{.Title}}</h2>
                 <h3 style="margin:0; padding:0">{{.ArtistName}}</h3>
-                <h4 style="margin:0; padding:0">{{.ReleaseDate}}</h4>
-                <h4 style="margin:0; padding:0">{{.AlbumType}}</h4>
-                <p><a href={{.AlbumURL}}>Listen Now</a></p>
+                <h4 style="margin:0; padding:0">{{.ReleaseDate.Format "January 02, 2006"}}</h4>
+                <h4 style="margin:0; padding:0">{{.Type}}</h4>
+                <p><a href={{.URL}}>Listen Now</a></p>
             </td>
         </tr>
     </table>
     <table>
         {{range .Tracks}}
         <tr>
-            <td style="padding-right:10px;">{{.TrackNumber}}</td>
-            <td style="padding-right:10px;">{{.TrackTitle}}</td>
+            <td style="padding-right:10px;">{{.Number}}</td>
+            <td style="padding-right:10px;">{{.Title}}</td>
             <td>{{.DurationMinutes}}:{{.DurationSeconds}}</td>
         </tr>
         {{end}}

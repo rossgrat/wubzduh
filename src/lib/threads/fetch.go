@@ -29,7 +29,6 @@ func spotifyGetArtistsLatestAlbums(
 	albums []db.Album,
 ) {
 	for _, a := range artists {
-
 		albumResults, err := client.GetArtistAlbums(
 			ctx,
 			(spotify.ID)(a.SpotifyID),
@@ -48,8 +47,8 @@ func spotifyGetArtistsLatestAlbums(
 			ReleaseDate: albumResults.Albums[0].ReleaseDateTime(),
 			CoverartURL: albumResults.Albums[0].Images[1].URL,
 			Type:        strings.ToTitle(albumResults.Albums[0].AlbumType),
-			URL:         (string)(albumResults.Albums[0].ExternalURLs["spotify"]),
-			SpotifyID:   (string)(albumResults.Albums[0].ID),
+			URL:         albumResults.Albums[0].ExternalURLs["spotify"],
+			SpotifyID:   albumResults.Albums[0].ID.String(),
 		}
 		albums = append(albums, newAlbum)
 	}
@@ -73,7 +72,7 @@ func spotifyGetAlbumTracks(
 	for _, tr := range trackResults.Tracks {
 		track := db.Track{
 			Title:      tr.Name,
-			SpotifyID:  (string)(tr.ID),
+			SpotifyID:  tr.ID.String(),
 			Number:     tr.TrackNumber,
 			DurationMS: tr.Duration,
 			AlbumID:    album.ID,
@@ -118,16 +117,26 @@ func Fetch(isReleasedTodayCheck bool) {
 	newAlbums = append(newAlbums, newSingles...)
 
 	for _, a := range newAlbums {
-		if isReleasedTodayCheck && checkAlbumReleasedToday(a) {
-			albumID, err := db.InsertAlbum(a)
-			if err != nil {
-				log.Fatalf(err.Error())
-			}
-			a.ID = albumID
-			tracks := spotifyGetAlbumTracks(client, ctx, a)
-			for _, track := range tracks {
-				db.InsertTrack(track)
+		if isReleasedTodayCheck {
+			if !checkAlbumReleasedToday(a) {
+				continue
 			}
 		}
+		albumID, err := db.InsertAlbum(a)
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+		if albumID == -1 {
+			log.Printf("Album %s already exists.", a.Title)
+			continue
+		}
+		a.ID = albumID
+		tracks := spotifyGetAlbumTracks(client, ctx, a)
+		for _, track := range tracks {
+			if err := db.InsertTrack(track); err != nil {
+				log.Fatalf(err.Error())
+			}
+		}
+
 	}
 }

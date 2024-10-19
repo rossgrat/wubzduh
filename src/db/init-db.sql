@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS albums (
     spotify_id TEXT NOT NULL,
     artist_id INT REFERENCES artists(id) NOT NULL,
     cover_art_url TEXT NOT NULL,
-    release_date TIMESTAMP NOT NULL,
+    release_date DATE NOT NULL,
     "type" TEXT NOT NULL,
     "url" TEXT NOT NULL,
     UNIQUE(spotify_id)
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS tracks (
 );
 
 INSERT INTO artists 
-(artist_name, spotify_id) 
+("name", spotify_id) 
 VALUES
 ('Tipper', '1soJ22UMyjIw6SYFtoFJwe'),
 ('Bob Moses', '6LHsnRBUYhFyt01PdKXAF5'),
@@ -46,3 +46,14 @@ VALUES
 ('Flying Lotus', '29XOeO6KIWxGthejQqn793'),
 ('ODESZA', '21mKp7DqtSNHhCAU2ugvUw');
 
+CREATE ROLE "server";
+CREATE DATABASE "server";
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "server";
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "server";
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO "server";
+GRANT ALL PRIVILEGES ON SCHEMA public TO "server";
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO "server";
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO "server";
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON FUNCTIONS TO "server";

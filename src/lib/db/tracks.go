@@ -18,10 +18,10 @@ func InsertTrack(track Track) error {
 		track.AlbumID,
 		track.DurationMS,
 		track.Number,
-		track.ID,
+		track.SpotifyID,
 	)
 	if err != nil {
-		return errors.New(fn + " - failed to query tracks" + err.Error())
+		return errors.New(fn + ": failed to query tracks - " + err.Error())
 	}
 	return nil
 }
@@ -34,7 +34,7 @@ func DeleteTracksForAlbum(albumID int) error {
 		WHERE album_id=$1`,
 		albumID,
 	); err != nil {
-		return errors.New(fn + " - failed to delete tracks" + err.Error())
+		return errors.New(fn + ": failed to delete tracks - " + err.Error())
 	}
 	return nil
 }

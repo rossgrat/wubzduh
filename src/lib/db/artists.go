@@ -15,7 +15,7 @@ func GetAllArtists() ([]Artist, error) {
 		FROM artists 
 		ORDER BY name ASC`)
 	if err != nil {
-		return artists, errors.New(fn + " - failed to query artists" + err.Error())
+		return artists, errors.New(fn + ": failed to query artists - " + err.Error())
 	}
 	for rows.Next() {
 		var a Artist
@@ -24,7 +24,7 @@ func GetAllArtists() ([]Artist, error) {
 			&a.Name,
 			&a.SpotifyID,
 		); err != nil {
-			return artists, errors.New(fn + " - failed to scan artist row" + err.Error())
+			return artists, errors.New(fn + ": failed to scan artist row - " + err.Error())
 		}
 		artists = append(artists, a)
 	}
@@ -35,14 +35,14 @@ func InsertArtist(artist Artist) error {
 	fn := "InsertArtist"
 	if _, err := DB.Exec(`
 		INSERT INTO artists (
-			artist_name,
+			name,
 			spotify_id
 		)
 		VALUES ($1, $2)`,
 		artist.Name,
 		artist.SpotifyID,
 	); err != nil {
-		return errors.New(fn + " - failed to insert artist" + err.Error())
+		return errors.New(fn + ": failed to insert artist - " + err.Error())
 	}
 	return nil
 }
@@ -60,7 +60,7 @@ func GetAllArtistsWithName(name string) ([]Artist, error) {
 		ORDER BY name ASC`,
 		name)
 	if err != nil {
-		return artists, errors.New(fn + " - failed to query artists" + err.Error())
+		return artists, errors.New(fn + ": failed to query artists - " + err.Error())
 	}
 	for rows.Next() {
 		var a Artist
@@ -69,7 +69,7 @@ func GetAllArtistsWithName(name string) ([]Artist, error) {
 			&a.Name,
 			&a.SpotifyID,
 		); err != nil {
-			return artists, errors.New(fn + " - failed to scan artist row" + err.Error())
+			return artists, errors.New(fn + ": failed to scan artist row - " + err.Error())
 		}
 		artists = append(artists, a)
 	}

@@ -53,7 +53,7 @@ func addArtist(client *spotify.Client, ctx context.Context) {
 
 		var selection int
 		fmt.Printf("Select entry: ")
-		fmt.Scanf("%d", selection)
+		fmt.Scan(&selection)
 		fmt.Printf("Selected entry %d: %s\n", selection, searchMap[selection].Name)
 
 		artists, err := db.GetAllArtistsWithName(searchMap[selection].Name)
@@ -145,7 +145,7 @@ func main() {
 			fmt.Print("Executing Fetch...")
 			threads.Fetch(true)
 		case "5":
-			fmt.Print("Executing Fetch...")
+			fmt.Print("Executing Fetch, no date matching...")
 			threads.Fetch(false)
 		case "6":
 			fmt.Print("Executing Purge..")
