@@ -26,7 +26,12 @@ SPOTIFY_CLIENT_ID=<your-client-id>
 SPOTIFY_CLIENT_SECRET=<your-client-secret>
 ```
 
+## Initial Deployment to Server
+
+## Continuous Deployment to Server
+
 # TODO
+- Do something intelligent with page and thread errors instead of just crashing
 - Add logger to record visits, use zlogger package
 - Use JSON for config files
 - Postgres is too heavyweight for this application, consider using sqlite or leveldb

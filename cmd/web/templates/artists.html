@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <font face ="monospace" color="white">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+    <link rel="stylesheet" href="/static/style.css">
+    <title>{{.Title}}</title>
+</head>
+<body>
+    {{template "navbar" .}}
+    <br>
+    <br>
+    <div class="row">
+        <h1>{{.Title}}</h1>
+        <p>Artists listed are checked for new releases.</p>
+    </div>
+    <div class="row">
+        <ul class="list">
+            {{range .Artists}}
+                <li>{{ .ArtistName }}</li>
+            {{end}}
+        </ul>
+    </div>
+</body>
+</html>

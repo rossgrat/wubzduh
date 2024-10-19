@@ -1,33 +1,35 @@
 --Create artist table
-CREATE TABLE IF NOT EXISTS Artists (
-    ID SERIAL PRIMARY KEY,
-    ArtistName TEXT NOT NULL,
-    SpotifyID TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS artists (
+    id SERIAL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    spotify_id TEXT NOT NULL,
+    UNIQUE(spotify_id)
 );
 --Create album table
-CREATE TABLE IF NOT EXISTS Albums (
-    ID SERIAL PRIMARY KEY,
-    AlbumTitle TEXT NOT NULL,
-    SpotifyID TEXT NOT NULL,
-    ArtistID INT REFERENCES Artists(ID) NOT NULL,
-    CoverartURL TEXT NOT NULL,
-    ReleaseDate TIMESTAMP NOT NULL,
-    AlbumType TEXT NOT NULL,
-    AlbumUrl TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS albums (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    spotify_id TEXT NOT NULL,
+    artist_id INT REFERENCES artists(id) NOT NULL,
+    cover_art_url TEXT NOT NULL,
+    release_date TIMESTAMP NOT NULL,
+    "type" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    UNIQUE(spotify_id)
 );
 --Create track table
 CREATE TABLE IF NOT EXISTS tracks (
-    ID SERIAL PRIMARY KEY,
-    TrackTitle TEXT NOT NULL,
-    SpotifyID TEXT NOT NULL,
-    AlbumID INT REFERENCES Albums(ID) NOT NULL,
-    LengthMS INT NOT NULL,
-    TrackNumber INT NOT NULL,
-    AddedToPlaylist BOOLEAN NOT NULL
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    spotify_id TEXT NOT NULL,
+    album_id INT REFERENCES albums(id) NOT NULL,
+    length_ms INT NOT NULL,
+    "number" INT NOT NULL,
+    UNIQUE(spotify_id)
 );
 
-INSERT INTO Artists 
-(ArtistName, SpotifyID) 
+INSERT INTO artists 
+(artist_name, spotify_id) 
 VALUES
 ('Tipper', '1soJ22UMyjIw6SYFtoFJwe'),
 ('Bob Moses', '6LHsnRBUYhFyt01PdKXAF5'),
@@ -43,3 +45,4 @@ VALUES
 ('Sofi Tukker', '586uxXMyD5ObPuzjtrzO1Q'),
 ('Flying Lotus', '29XOeO6KIWxGthejQqn793'),
 ('ODESZA', '21mKp7DqtSNHhCAU2ugvUw');
+

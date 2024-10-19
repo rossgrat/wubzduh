@@ -4,57 +4,51 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 
-	wubzduh "github.com/rossgrat/wubzduh/src"
+	"github.com/rossgrat/wubzduh/src/lib/db"
+	"github.com/rossgrat/wubzduh/src/lib/threads"
+	"github.com/rossgrat/wubzduh/src/lib/util"
 
 	_ "github.com/lib/pq"
 
 	"github.com/zmb3/spotify/v2"
 )
 
-const (
-	insertArtist           = `INSERT INTO Artists (ArtistName, SpotifyID) values ($1, $2)`
-	getAllArtistsNameAndID = `SELECT ArtistName, SpotifyID FROM Artists ORDER BY ArtistName ASC;`
-	getAllArtistsWithName  = `SELECT ArtistName, SpotifyID FROM Artists WHERE ArtistName=$1`
-)
-
-func addArtist(db *sql.DB, client *spotify.Client, ctx context.Context) {
-	var artist string
-	for artist != "exit" {
+func addArtist(client *spotify.Client, ctx context.Context) {
+	for {
+		var artistName string
 		fmt.Printf("\nArtist Addition \nUse '_' instead of ' '\nUse 'exit' to return to menu\n\nEnter Artist: ")
-		fmt.Scan(&artist)
-		if artist == "exit" {
+		fmt.Scan(&artistName)
+		if artistName == "exit" {
 			fmt.Printf("Exiting CLI")
 			return
 		}
-		fmt.Printf("Entered Artist %s\n\n", artist)
+		fmt.Printf("Entered Artist %s\n\n", artistName)
 
-		results, err := client.Search(ctx, artist, spotify.SearchTypeArtist, spotify.Limit(5))
+		results, err := client.Search(ctx, artistName, spotify.SearchTypeArtist, spotify.Limit(5))
 		if err != nil {
 			log.Fatal(err)
 		}
-		if results.Artists != nil {
-			fmt.Printf("Found %d Artists.\n", len(results.Artists.Artists))
+		if results.Artists == nil {
+			fmt.Printf("Did not find any artists.")
+			continue
 		}
+		fmt.Printf("Found %d Artists.\n", len(results.Artists.Artists))
 
 		var searchMap [10]spotify.FullArtist
 		var counter int = 0
-		// handle album results
-		if results.Artists != nil {
-			fmt.Printf("---Results---\n")
-			for _, item := range results.Artists.Artists {
-				searchMap[counter] = item
-				fmt.Printf("%d: %s", counter, item.Name)
-				fmt.Printf("\n\t %d ", item.Popularity)
-				for _, genre := range item.Genres {
-					fmt.Printf("%s ", genre)
-				}
-				fmt.Printf("\n")
-				counter++
+		fmt.Printf("---Results---\n")
+		for _, item := range results.Artists.Artists {
+			searchMap[counter] = item
+			fmt.Printf("%d: %s", counter, item.Name)
+			fmt.Printf("\n\t %d ", item.Popularity)
+			for _, genre := range item.Genres {
+				fmt.Printf("%s ", genre)
 			}
+			fmt.Printf("\n")
+			counter++
 		}
 
 		var selection int
@@ -62,70 +56,56 @@ func addArtist(db *sql.DB, client *spotify.Client, ctx context.Context) {
 		fmt.Scanf("%d", selection)
 		fmt.Printf("Selected entry %d: %s\n", selection, searchMap[selection].Name)
 
-		artistQuery, err := db.Exec(getAllArtistsWithName, searchMap[selection].Name)
+		artists, err := db.GetAllArtistsWithName(searchMap[selection].Name)
 		if err != nil {
-			log.Fatalf("Error - couldn't query Artists: %v", err)
+			log.Fatal(err.Error())
 		}
-
-		count, err := artistQuery.RowsAffected()
-		if err != nil {
-			log.Fatalf("Error - couldn't check Album query rows: %v", err)
-		}
-		if count == 0 {
-			if err != nil {
-				log.Fatalf("Failed to query artists: %v", err)
-			}
-
-			_, err = db.Exec(insertArtist, searchMap[selection].Name, searchMap[selection].SimpleArtist.ID)
-			if err != nil {
-				log.Fatalf("couldn't insert artist: %v", err)
-			}
-		} else {
+		if len(artists) > 0 {
 			fmt.Printf("Error - Artist exists in database.")
+			return
+		}
+
+		artist := db.Artist{
+			Name:      searchMap[selection].Name,
+			SpotifyID: searchMap[selection].SimpleArtist.ID.String(),
+		}
+		if err := db.InsertArtist(artist); err != nil {
+			log.Fatalf("couldn't insert artist: %v", err)
 		}
 	}
 }
 
-func showArtists(db *sql.DB) {
-	rows, err := db.Query(getAllArtistsNameAndID)
+func showArtists() {
+	artists, err := db.GetAllArtists()
 	if err != nil {
-		log.Fatalf("Failed to query artists: %v", err)
+		log.Fatal(err.Error())
 	}
-	var name, spotify_id string
 	fmt.Printf("\n\n")
 	fmt.Printf("---Results---\n")
-	for rows.Next() {
-		err = rows.Scan(&name, &spotify_id)
-		if err != nil {
-			log.Fatalf("Failed to scan row: %v", err)
-		}
-		fmt.Printf("%s %s\n", name, spotify_id)
+	for _, artist := range artists {
+		fmt.Printf("%s %s\n", artist.Name, artist.SpotifyID)
 	}
 }
 
-func searchForArtist(db *sql.DB) {
-	var artist string
-	for artist != "exit" {
+func searchForArtist() {
+	for {
+		var artistName string
 		fmt.Printf("\nArtist Search \nUse '_' instead of ' '\nUse 'exit' to return to menu\n\nEnter Artist: ")
-		fmt.Scan(&artist)
-		if artist == "exit" {
+		fmt.Scan(&artistName)
+		if artistName == "exit" {
 			fmt.Printf("Exiting CLI")
 			return
 		}
-		fmt.Printf("Entered Artist %s\n\n", artist)
+		fmt.Printf("Entered Artist %s\n\n", artistName)
 
-		rows, err := db.Query(getAllArtistsWithName, artist)
+		artists, err := db.GetAllArtistsWithName(artistName)
 		if err != nil {
-			log.Fatalf("Failed to query artists: %v", err)
+			log.Fatal(err.Error())
 		}
-		var name, spotify_id string
+		fmt.Printf("\n\n")
 		fmt.Printf("---Results---\n")
-		for rows.Next() {
-			err = rows.Scan(&name, &spotify_id)
-			if err != nil {
-				log.Fatalf("Failed to scan row: %v", err)
-			}
-			fmt.Printf("%s %s\n", name, spotify_id)
+		for _, artist := range artists {
+			fmt.Printf("%s %s\n", artist.Name, artist.SpotifyID)
 		}
 	}
 }
@@ -146,8 +126,8 @@ func optionMenu() (option string) {
 }
 
 func main() {
-	db := wubzduh.ConnectToDB()
-	client, ctx := wubzduh.ConnectToSpotify()
+	db.Connect()
+	client, ctx := util.ConnectToSpotify()
 
 	for {
 		option := optionMenu()
@@ -156,20 +136,20 @@ func main() {
 			fmt.Printf("Exiting.\n")
 			return
 		case "1":
-			addArtist(db, client, ctx)
+			addArtist(client, ctx)
 		case "2":
-			showArtists(db)
+			showArtists()
 		case "3":
-			searchForArtist(db)
+			searchForArtist()
 		case "4":
 			fmt.Print("Executing Fetch...")
-			wubzduh.Fetch(db)
+			threads.Fetch(true)
 		case "5":
 			fmt.Print("Executing Fetch...")
-			wubzduh.FetchAllLatest(db)
+			threads.Fetch(false)
 		case "6":
 			fmt.Print("Executing Purge..")
-			wubzduh.Purge(db)
+			threads.Purge()
 		}
 	}
 }
