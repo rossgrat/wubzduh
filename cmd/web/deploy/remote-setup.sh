@@ -10,7 +10,7 @@ URL="$USER@$HOST"
 
 # Install postgres and initialize the database
 scp -i $KEY ../src/db/init-db.sql $URL:~/
-scp -i $KEY setup.sh $URL:~/
+scp -i $KEY ../../../src/config/setup.sh $URL:~/
 ssh -i $KEY $URL "./setup.sh"
 ssh -i $KEY $URL "rm init-db.sql"
 ssh -i $KEY $URL "rm setup.sh"
