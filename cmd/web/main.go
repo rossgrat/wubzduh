@@ -98,22 +98,6 @@ func FaviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/music.png")
 }
 
-func main() {
-	db.Connect()
-	Client, Ctx = util.ConnectToSpotify()
-
-	go FetchThread(time2)
-	go PurgeThread()
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/artists/", ArtistsViewHandler)
-	mux.HandleFunc("/feed/", FeedViewHandler)
-	mux.HandleFunc("/favicon.ico", FaviconHandler)
-	mux.HandleFunc("/", FeedRedirect)
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	log.Fatal(http.ListenAndServe(":8080", RequestLogger(mux)))
-}
-
 // The Fetch thread is responsible for checking for new music at 12:30am and 11:30pm
 // each day
 func FetchThread(timeCase int) {
@@ -153,4 +137,20 @@ func PurgeThread() {
 	<-PurgeTimer.C
 	threads.Purge()
 	go PurgeThread()
+}
+
+func main() {
+	db.Connect()
+	Client, Ctx = util.ConnectToSpotify()
+
+	go FetchThread(time2)
+	go PurgeThread()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/artists/", ArtistsViewHandler)
+	mux.HandleFunc("/feed/", FeedViewHandler)
+	mux.HandleFunc("/favicon.ico", FaviconHandler)
+	mux.HandleFunc("/", FeedRedirect)
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	log.Fatal(http.ListenAndServe(":8080", RequestLogger(mux)))
 }

@@ -27,8 +27,14 @@ SPOTIFY_CLIENT_SECRET=<your-client-secret>
 ```
 
 ## Initial Deployment to Server
+1. Copy over wubzduh.service to correct directory
+2. Load wubzdub.service into systemctl daemon
+3. Create database and initialize tables
 
-## Continuous Deployment to Server
+## Deployment to Server
+1. Build web executable
+2. Copy web executable, templates, and enviroment file to server
+3. Restart service daemon
 
 # TODO
 - Do something intelligent with page and thread errors instead of just crashing
@@ -41,7 +47,7 @@ SPOTIFY_CLIENT_SECRET=<your-client-secret>
 - Write Playlist module
     For all new albums
         Get track and add it to playlists
-    For all albums older than one week
+    For all albums older than one week  
         Remove entry from playlist
 - CLI Module Additions
     Print contents of Album table

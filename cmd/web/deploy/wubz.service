@@ -1,0 +1,13 @@
+[Unit]
+Description=wubzweb
+
+[Service]
+EnvironmentFile=/home/ubuntu/build/env.txt
+WorkingDirectory=/home/ubuntu/build
+Type=simple
+ExecStart=/home/ubuntu/build/web
+StandardOutput=file:/home/ubuntu/serverlog
+StandardError=file:/home/ubuntu/serverlog
+
+[Install]
+WantedBy=multi-user.target
