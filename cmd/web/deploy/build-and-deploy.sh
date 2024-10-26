@@ -9,17 +9,17 @@ URL="$USER@$HOST"
 
 GOARCH=amd64 GOOS=linux go build ../
 
-mkdir build
-cp -r ../static build/
-cp -r ../templates build/
-cp env.txt build/
-cp wubz.service build/
-mv web build/
+mkdir build-web
+cp -r ../static build-web/
+cp -r ../templates build-web/
+cp ../../../src/config/env.txt build-web/
+cp wubz.service build-web/
+mv web build-web/
 
-tar -czvf build.tar.gz build
-rm -rf build
+tar -czvf build-web.tar.gz build-web
+rm -rf build-web
 
-scp -i $KEY build.tar.gz $URL:~/
-ssh -i $KEY $URL "tar -xvzf build.tar.gz"
-ssh -i $KEY $URL "rm build.tar.gz"
+scp -i $KEY build-web.tar.gz $URL:~/
+ssh -i $KEY $URL "tar -xvzf build-web.tar.gz"
+ssh -i $KEY $URL "rm build-web.tar.gz"
 ssh -i $KEY $URL "sudo systemctl restart wubz"

@@ -2,10 +2,10 @@
 Description=wubzweb
 
 [Service]
-EnvironmentFile=/home/ubuntu/build/env.txt
-WorkingDirectory=/home/ubuntu/build
+EnvironmentFile=/home/ubuntu/build-web/env.txt
+WorkingDirectory=/home/ubuntu/build-web
 Type=simple
-ExecStart=/home/ubuntu/build/web
+ExecStart=/home/ubuntu/build-web/web
 StandardOutput=file:/home/ubuntu/serverlog
 StandardError=file:/home/ubuntu/serverlog
 

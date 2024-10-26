@@ -26,6 +26,19 @@ SPOTIFY_CLIENT_ID=<your-client-id>
 SPOTIFY_CLIENT_SECRET=<your-client-secret>
 ```
 
+# Server
+
+## Caddy
+Caddy is used for both SSL, HTTP to HTTPS redirection, and as a reverse proxy so I can have more than one application running per machine. The CaddyFile is present in `cmd/web/deploy`
+
+Caddy can be installed with the instructions [here](https://caddyserver.com/docs/install)
+
+### Quick Reference
+- `caddy start` - Starts Caddy in the background
+- `caddy run` - Starts Caddy in the foreground
+- `caddy adapt` - Reloads the Caddyfile, must be in the directory of the Caddy file, else need to use `caddy adapt --config /path/to/file`
+
+
 ## Initial Deployment to Server
 1. Copy over wubzduh.service to correct directory
 2. Load wubzdub.service into systemctl daemon
@@ -39,9 +52,11 @@ SPOTIFY_CLIENT_SECRET=<your-client-secret>
 # TODO
 - Do something intelligent with page and thread errors instead of just crashing
 - Add logger to record visits, use zlogger package
-- Use JSON for config files
+    - Use lnav to examine logs
+- Use JSON for config files, not text and environment variables
 - Postgres is too heavyweight for this application, consider using sqlite or leveldb
 - Add some real styling 
+-
 
 ## Future Ideas
 - Write Playlist module
