@@ -36,6 +36,7 @@ May have to run any of these commands with `sudo` for the correct permissions.
     - `-l` displays listening sockets
     - `-n` shows ports numerically instead of by name
     - `-p` shows processes using the sockets
+- Caddy has a systemd unit that should be made use of, the default config for Caddy is in `/etc/caddy/Caddyfile`. In order to prevent duplicate Caddyfiles, it is neccessary to use the above commands with `--config /etc/caddy/Caddyfile`
 
 ## Initial Deployment
 - Initial deployment for `web` is done with `remote-setup.sh`
@@ -47,6 +48,10 @@ May have to run any of these commands with `sudo` for the correct permissions.
 
 
 # TODO
+- Server is crashing for some reason, figure out why
+    - Setup logging for Caddy
+- Add CLI functionality to add no artists if the search does not populate any valid artists
+- Add throttling for bots
 - Get rid of all of the ugly relative directory strings `../../, etc` in favor of variables
 - Allow specification of HOST in config files
 - Do something intelligent with page and thread errors instead of just crashing
