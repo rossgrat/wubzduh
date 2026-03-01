@@ -23,7 +23,7 @@ Internet → Cloudflare → cloudflared → Caddy → wubzduh:8080
 1. Copy and configure environment variables:
    ```bash
    cp .env.example .env
-   nano .env
+   nvim .env
    ```
 
 2. Start services:
