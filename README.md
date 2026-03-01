@@ -1,82 +1,75 @@
-# wubzduh.com
+# wubzduh
 
-https://wubzduh.grattafiori.com
+https://wubzduh.grattafiori.dev
 
-## A New Release feed from a list of hand-curated EDM artists
-Wubzduh is a multi-threaded Golang web server using a postgres database that integrates with the Spotify API to provide viewers with a feed of new music from a list of artists as soon as that new music is relased (12:05 UTC).
+## A new release feed from hand-curated EDM artists
 
-Entries that are older than two weeks are cleared out by a cleanup thread at 18:00 UTC.
+Wubzduh monitors Spotify for new music releases from a curated list of artists and serves a web feed. Background workers fetch new releases every 12 hours and purge entries older than 14 days.
 
-## Local Development Setup
-1. Create an env.txt with the following fields:
+## Architecture
+
+- **Go** web server with cobra CLI, viper config, and PostgreSQL
+- **Docker** deployment to [potatoserver](https://github.com/rossgrat/potatoserver) via Cloudflare Tunnel
+- **CI/CD** via GitHub Actions — pushes to `main` build and publish a Docker image to GHCR
+
 ```
-DB_USERNAME=<username>
-DB_PASSWORD=<password>
-DB_NAME=<databaseName>
-SPOTIFY_CLIENT_ID=<your-client-id>
-SPOTIFY_CLIENT_SECRET=<your-client-secret>
+Internet → Cloudflare → cloudflared → Caddy → wubzduh:8080
+                                                  ↕
+                                              PostgreSQL
 ```
-2. Use the `src/config/setup.sh` to install postgres if necessary, as well as create and initialize the database and neccessary roles
 
-# Server
+## Local Development
 
-## Caddy
-Caddy is used for both SSL, HTTP to HTTPS redirection, and as a reverse proxy so I can have more than one application running per machine. The CaddyFile is present in `cmd/web/deploy`
+1. Copy and configure environment variables:
+   ```bash
+   cp .env.example .env
+   nano .env
+   ```
 
-Caddy can be installed with the instructions [here](https://caddyserver.com/docs/install)
+2. Start services:
+   ```bash
+   docker compose up
+   ```
 
-### Quick Reference
-May have to run any of these commands with `sudo` for the correct permissions.
-- `caddy start` - Starts Caddy in the background
-- `caddy run` - Starts Caddy in the foreground
-- `caddy adapt` - Reloads the Caddyfile, must be in the directory of the Caddy file, else need to use `caddy adapt --config /path/to/file`
-- `ss -tulnp` - Sometimes it is neccessary to see what ports are already in use, as Caddy may throw an error if you have already started it, use the `ss` socket investigator for this
-    - `-t` displays TCP info
-    - `-u` displays UDP info
-    - `-l` displays listening sockets
-    - `-n` shows ports numerically instead of by name
-    - `-p` shows processes using the sockets
-- Caddy has a systemd unit that should be made use of, the default config for Caddy is in `/etc/caddy/Caddyfile`. In order to prevent duplicate Caddyfiles, it is neccessary to use the above commands with `--config /etc/caddy/Caddyfile`
+3. Visit http://localhost:8080
 
-## Initial Deployment
-- Initial deployment for `web` is done with `remote-setup.sh`
-- Initial deployment for `cli` is the same as continous deployment, just use the `build-and-deploy.sh`
+## CLI
 
-## Continous Deployment
-- Continuous deployment for `web` is done with `build-and-deploy.sh`, to change the daemon, use `deploy-daemon.sh`
-- Continuous deployment for `cli` is the same as initial deployment, just use the `build-and-deploy.sh`
+```bash
+wubzduh serve                    # Start the web server
+wubzduh fetch                    # Manually fetch new releases
+wubzduh fetch --no-date-check    # Fetch all latest releases regardless of date
+wubzduh purge                    # Purge releases older than 14 days
+wubzduh artists list             # List tracked artists
+wubzduh artists add "Tycho"      # Search Spotify and add an artist
+wubzduh artists search "ZHU"     # Search artists in the database
+wubzduh migrate up               # Apply database migrations
+wubzduh migrate down             # Roll back migrations
+wubzduh migrate version          # Show current migration version
+```
 
+All commands accept `--config <path>` (default: `./config.yaml`).
 
-# TODO
-- Server is crashing for some reason, figure out why
-    - Setup logging for Caddy
-- Add CLI functionality to add no artists if the search does not populate any valid artists
-- Add throttling for bots
-- Get rid of all of the ugly relative directory strings `../../, etc` in favor of variables
-- Allow specification of HOST in config files
-- Do something intelligent with page and thread errors instead of just crashing
-- Add logger to record visits, use zlogger package
-    - Use lnav to examine logs
-- Use JSON for config files, not text and environment variables
-- Postgres is too heavyweight for this application, consider using sqlite or leveldb
-- Add some real styling, move feed to the middle of the screen for wider screens
+## Deployment
 
-## Future Ideas
-- Write Playlist module
-    For all new albums
-        Get track and add it to playlists
-    For all albums older than one week  
-        Remove entry from playlist
-- CLI Module Additions
-    Print contents of Album table
-    Print contents of Track table
-- Allow sorting of albums by genres
-    Add logic in FeedHandler to grab tracks based on genre parameter/feed/?genre=house
-    https://golangbyexample.com/net-http-package-get-query-params-golang/
-- Tag albums release day of with NEW RELEASE when displaying on website?
-- Add total duration to album displayed information
-- Add last release date field in artists tab
-- Make this whole thing into a single-page web application and a progressive web app, save on server costs
-- Do push notifications as a PWA
-- Use Spotify OAUTH to allow people to login to their spotify profiles, retrieve their liked artists, push notifications based on those
+```bash
+make deploy    # Deploy to potatoserver
+make stop      # Stop the service
+make logs      # Tail logs
+```
 
+## Project Structure
+
+```
+cmd/           Cobra CLI commands (serve, fetch, purge, artists, migrate)
+internal/      Business logic (config, db, service, worker)
+plugins/       External integrations (spotify, logger)
+web/           HTTP server, handlers, middleware, templates, static assets
+migrations/    SQL migrations (embedded in binary via golang-migrate)
+deploy/        Production docker-compose
+```
+
+## Configuration
+
+- `config.yaml` — non-secret config (server port, DB host, log settings)
+- `.env` — secrets (`DB_USER`, `DB_PASSWORD`, `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`)

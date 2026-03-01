@@ -1,0 +1,54 @@
+services:
+  wubzduh:
+    build: .
+    container_name: wubzduh
+    env_file:
+      - .env
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - wubzduh-logs:/var/log/wubzduh
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - caddy-network
+      - wubzduh-internal
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=wubz
+    volumes:
+      - wubzduh-db:/var/lib/postgresql/data
+    networks:
+      - wubzduh-internal
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$DB_USER -d wubz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  caddy-network:
+    external: true
+  wubzduh-internal:
+    internal: true
+
+volumes:
+  wubzduh-db:
+  wubzduh-logs:
