@@ -10,14 +10,15 @@ RUN go build -o wubzduh .
 
 FROM alpine:3.21
 
-RUN adduser -D -u 10001 appuser
+RUN apk add --no-cache su-exec && adduser -D -u 10001 appuser
 
 WORKDIR /app
 
-RUN mkdir -p /var/log/wubzduh && chown appuser:appuser /var/log/wubzduh
+RUN mkdir -p /var/log/wubzduh
 
 COPY --from=builder /build/wubzduh .
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
-USER appuser
-
+ENTRYPOINT ["./entrypoint.sh"]
 CMD ["./wubzduh", "serve", "--config", "/app/config.yaml"]
