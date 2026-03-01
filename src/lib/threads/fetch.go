@@ -36,16 +36,23 @@ func spotifyGetArtistsLatestAlbums(
 			spotify.Limit(1),
 		)
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("Failed to get albums for artist %s: %v\n", a.Name, err)
+			continue
 		}
 		if len(albumResults.Albums) < 1 {
 			continue
+		}
+		coverartURL := ""
+		if len(albumResults.Albums[0].Images) > 1 {
+			coverartURL = albumResults.Albums[0].Images[1].URL
+		} else if len(albumResults.Albums[0].Images) > 0 {
+			coverartURL = albumResults.Albums[0].Images[0].URL
 		}
 		newAlbum := db.Album{
 			Title:       albumResults.Albums[0].Name,
 			ArtistID:    a.ID,
 			ReleaseDate: albumResults.Albums[0].ReleaseDateTime(),
-			CoverartURL: albumResults.Albums[0].Images[1].URL,
+			CoverartURL: coverartURL,
 			Type:        strings.ToTitle(albumResults.Albums[0].AlbumType),
 			URL:         albumResults.Albums[0].ExternalURLs["spotify"],
 			SpotifyID:   albumResults.Albums[0].ID.String(),
@@ -67,7 +74,8 @@ func spotifyGetAlbumTracks(
 		(spotify.ID)(album.SpotifyID),
 	)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Failed to get tracks for album %s: %v\n", album.Title, err)
+		return tracks
 	}
 	for _, tr := range trackResults.Tracks {
 		track := db.Track{
@@ -100,7 +108,8 @@ func Fetch(isReleasedTodayCheck bool) {
 	client, ctx := util.ConnectToSpotify()
 	artists, err := db.GetAllArtists()
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Printf("Fetch: failed to get artists: %s\n", err.Error())
+		return
 	}
 	newAlbums := spotifyGetArtistsLatestAlbums(
 		client,
@@ -124,7 +133,8 @@ func Fetch(isReleasedTodayCheck bool) {
 		}
 		albumID, err := db.InsertAlbum(a)
 		if err != nil {
-			log.Fatalf(err.Error())
+			log.Printf("Fetch: failed to insert album %s: %s\n", a.Title, err.Error())
+			continue
 		}
 		if albumID == -1 {
 			log.Printf("Album %s already exists.", a.Title)
@@ -134,7 +144,7 @@ func Fetch(isReleasedTodayCheck bool) {
 		tracks := spotifyGetAlbumTracks(client, ctx, a)
 		for _, track := range tracks {
 			if err := db.InsertTrack(track); err != nil {
-				log.Fatalf(err.Error())
+				log.Printf("Fetch: failed to insert track %s: %s\n", track.Title, err.Error())
 			}
 		}
 

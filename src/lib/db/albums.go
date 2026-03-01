@@ -25,6 +25,7 @@ func GetAlbums() ([]Album, error) {
 	if err != nil {
 		return []Album{}, errors.New(fn + ": failed to query albums - " + err.Error())
 	}
+	defer albumRows.Close()
 	albums := []Album{}
 	for albumRows.Next() {
 		var a Album
@@ -52,6 +53,7 @@ func GetAlbums() ([]Album, error) {
 		if err != nil {
 			return albums, errors.New(fn + ": failed to query album tracks  - " + err.Error())
 		}
+		defer trackRows.Close()
 		for trackRows.Next() {
 			var t Track
 			var durationMs int
@@ -129,6 +131,7 @@ func GetAllAlbumReleaseDates() ([]Album, error) {
 	if err != nil {
 		return albums, errors.New(fn + ": failed to query albums  - " + err.Error())
 	}
+	defer albumRows.Close()
 	for albumRows.Next() {
 		var album Album
 		if err := albumRows.Scan(

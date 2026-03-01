@@ -14,15 +14,17 @@ func Purge() {
 
 	albums, err := db.GetAllAlbumReleaseDates()
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Printf("Purge: failed to get album release dates: %s\n", err.Error())
+		return
 	}
 	for _, album := range albums {
 		if album.ReleaseDate.Before(currentDate) {
 			if err := db.DeleteTracksForAlbum(album.ID); err != nil {
-				log.Fatal(err.Error())
+				log.Printf("Purge: failed to delete tracks for album %d: %s\n", album.ID, err.Error())
+				continue
 			}
 			if err := db.DeleteAlbum(album.ID); err != nil {
-				log.Fatal(err.Error())
+				log.Printf("Purge: failed to delete album %d: %s\n", album.ID, err.Error())
 			}
 		}
 	}

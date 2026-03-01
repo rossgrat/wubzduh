@@ -8,15 +8,16 @@ func GetAllArtists() ([]Artist, error) {
 	fn := "GetAllArtists"
 	artists := []Artist{}
 	rows, err := DB.Query(`
-		SELECT 
+		SELECT
 			id,
 			name,
 			spotify_id
-		FROM artists 
+		FROM artists
 		ORDER BY name ASC`)
 	if err != nil {
 		return artists, errors.New(fn + ": failed to query artists - " + err.Error())
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var a Artist
 		if err := rows.Scan(
@@ -51,17 +52,18 @@ func GetAllArtistsWithName(name string) ([]Artist, error) {
 	fn := "GetAllArtists"
 	artists := []Artist{}
 	rows, err := DB.Query(`
-		SELECT 
+		SELECT
 			id,
 			name,
 			spotify_id
-		FROM artists 
+		FROM artists
 		WHERE name=$1
 		ORDER BY name ASC`,
 		name)
 	if err != nil {
 		return artists, errors.New(fn + ": failed to query artists - " + err.Error())
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var a Artist
 		if err := rows.Scan(

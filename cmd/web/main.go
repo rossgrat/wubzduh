@@ -2,17 +2,16 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"html/template"
 	"log"
 	"net/http"
-	"sync"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/rossgrat/wubzduh/src/lib/db"
 	"github.com/rossgrat/wubzduh/src/lib/threads"
-	"github.com/rossgrat/wubzduh/src/lib/util"
-	"github.com/zmb3/spotify/v2"
 )
 
 const (
@@ -29,18 +28,6 @@ type FeedPage struct {
 	Title  string
 	Albums []db.Album
 }
-type PlaylistPage struct {
-	Title    string
-	Playlist string
-}
-
-var DB *sql.DB
-var Client *spotify.Client
-var Ctx context.Context
-var Lock sync.RWMutex
-
-var FetchTimer *time.Timer
-var PurgeTimer *time.Timer
 
 var Templates = template.Must(
 	template.ParseFiles(
@@ -68,7 +55,9 @@ func FeedViewHandler(w http.ResponseWriter, r *http.Request) {
 	var Page FeedPage
 	albums, err := db.GetAlbums()
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Println(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 	Page.Albums = albums
 
@@ -83,7 +72,9 @@ func ArtistsViewHandler(w http.ResponseWriter, r *http.Request) {
 	var Page ArtistPage
 	artists, err := db.GetAllArtists()
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Println(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 	Page.Artists = artists
 
@@ -117,8 +108,8 @@ func FetchThread(timeCase int) {
 		log.Printf("Set Fetch Timer for 11:30pm Today. ETE: %s\n", diff)
 	}
 
-	FetchTimer = time.NewTimer(diff)
-	<-FetchTimer.C
+	timer := time.NewTimer(diff)
+	<-timer.C
 	threads.Fetch(true)
 	go FetchThread((timeCase + 1) % numTimes)
 }
@@ -133,15 +124,14 @@ func PurgeThread() {
 
 	log.Printf("Set Purge Timer for 12:00pm Tomorrow. ETE: %s\n", diff)
 
-	PurgeTimer = time.NewTimer(diff)
-	<-PurgeTimer.C
+	timer := time.NewTimer(diff)
+	<-timer.C
 	threads.Purge()
 	go PurgeThread()
 }
 
 func main() {
 	db.Connect()
-	Client, Ctx = util.ConnectToSpotify()
 
 	go FetchThread(time2)
 	go PurgeThread()
@@ -152,5 +142,30 @@ func main() {
 	mux.HandleFunc("/favicon.ico", FaviconHandler)
 	mux.HandleFunc("/", FeedRedirect)
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	log.Fatal(http.ListenAndServe(":8080", RequestLogger(mux)))
+
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: RequestLogger(mux),
+	}
+
+	// Listen for shutdown signals in the background
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		sig := <-quit
+		log.Printf("Received signal %s, shutting down...\n", sig)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		if err := server.Shutdown(ctx); err != nil {
+			log.Printf("Server shutdown error: %v\n", err)
+		}
+	}()
+
+	log.Println("Server starting on :8080")
+	if err := server.ListenAndServe(); err != http.ErrServerClosed {
+		log.Fatalf("Server error: %v\n", err)
+	}
+	log.Println("Server stopped")
 }
