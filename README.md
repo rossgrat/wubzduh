@@ -1,75 +1,25 @@
 # wubzduh
 
-https://wubzduh.grattafiori.dev
+[New music releases](https://wubzduh.grattafiori.dev) from a curated list of EDM artists on Spotify.
+The Go service stores results in Postgres, fetches every 12 hours, and removes releases older than 14 days.
 
-## A new release feed from hand-curated EDM artists
+## Run locally
 
-Wubzduh monitors Spotify for new music releases from a curated list of artists and serves a web feed. Background workers fetch new releases every 12 hours and purge entries older than 14 days.
+Copy [.env.example](.env.example) to `.env` and supply Spotify credentials and database credentials.
+Non-secret configuration lives in [config.yaml](config.yaml).
 
-## Architecture
+The [Compose file](docker-compose.yml) requires the external `caddy-network`.
+If absent, create it once with `docker network create caddy-network`.
+Initialize the database, then expose the app only on localhost:
 
-- **Go** web server with cobra CLI, viper config, and PostgreSQL
-- **Docker** deployment to [potatoserver](https://github.com/rossgrat/potatoserver) via Cloudflare Tunnel
-- **CI/CD** via GitHub Actions — pushes to `main` build and publish a Docker image to GHCR
-
-```
-Internet → Cloudflare → cloudflared → Caddy → wubzduh:8080
-                                                  ↕
-                                              PostgreSQL
-```
-
-## Local Development
-
-1. Copy and configure environment variables:
-   ```bash
-   cp .env.example .env
-   nvim .env
-   ```
-
-2. Start services:
-   ```bash
-   docker compose up
-   ```
-
-3. Visit http://localhost:8080
-
-## CLI
-
-```bash
-wubzduh serve                    # Start the web server
-wubzduh fetch                    # Manually fetch new releases
-wubzduh fetch --no-date-check    # Fetch all latest releases regardless of date
-wubzduh purge                    # Purge releases older than 14 days
-wubzduh artists list             # List tracked artists
-wubzduh artists add "Tycho"      # Search Spotify and add an artist
-wubzduh artists search "ZHU"     # Search artists in the database
-wubzduh migrate up               # Apply database migrations
-wubzduh migrate down             # Roll back migrations
-wubzduh migrate version          # Show current migration version
+```sh
+docker compose run --rm wubzduh ./wubzduh migrate up
+docker compose run --rm -p 127.0.0.1:8080:8080 wubzduh
 ```
 
-All commands accept `--config <path>` (default: `./config.yaml`).
+Open `http://localhost:8080`.
+Plain `docker compose up` does not publish an application port.
+Use the same container command form for `artists list`, `artists add "Tycho"`, `fetch`, or `purge`.
+The CLI's `--help` lists commands and flags.
 
-## Deployment
-
-```bash
-make deploy    # Deploy to potatoserver
-make stop      # Stop the service
-make logs      # Tail logs
-```
-
-## Project Structure
-
-```
-cmd/           Cobra CLI commands (serve, fetch, purge, artists, migrate)
-internal/      Business logic (config, db, service, worker)
-plugins/       External integrations (spotify, logger)
-web/           HTTP server, handlers, middleware, templates, static assets
-migrations/    SQL migrations (embedded in binary via golang-migrate)
-deploy/        Production docker-compose
-```
-
-## Configuration
-
-- `config.yaml` — non-secret config (server port, DB host, log settings)
-- `.env` — secrets (`DB_USER`, `DB_PASSWORD`, `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`)
+Production runs on K3s. Follow [potatoserver operations](https://github.com/rossgrat/potatoserver/blob/main/docs/operations.md) rather than the retired Docker deployment targets.
